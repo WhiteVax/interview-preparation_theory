@@ -47,31 +47,458 @@
 ---
 
 ### 1. Что такое поток ввода-вывода?
+Поток ввода-вывода (I/O stream) — это абстракция, представляющая последовательность данных, которую можно читать (ввод) или записывать (вывод). В Java потоки — основа всех операций ввода-вывода и позволяют работать с данными одинаково, независимо от источника или назначения.
+
+В основе всех классов, управляющих потоками байтов, находятся два абстрактных класса: InputStream (представляющий потоки ввода) и OutputStream (представляющий потоки вывода).
+
+Но поскольку работать с байтами не очень удобно, то для работы с потоками символов были добавлены абстрактные классы Reader (для чтения потоков символов) и Writer (для записи потоков символов).
+
+Все остальные классы, работающие с потоками, являются наследниками этих абстрактных классов.
+
+<p align="center">
+  <img src="imgs-io/io%20table.png" width="" height="" alt="Compile process">
+</p>
 
 ### 2. Что такое Java IO?
+Java IO (Input/Output) — это пакет java.io, предоставляющий API для работы с потоками ввода-вывода. Он включает классы для чтения/записи данных из/в файлы, консоль, сеть и другие источники. Java IO основан на декоратор-паттерне, где потоки можно оборачивать для добавления функциональности (например, буферизация, фильтрация).
+
+Нюансы:
++ Классы делятся на байтовые (InputStream, OutputStream) и символьные (Reader, Writer).
++ Поддерживает сериализацию объектов, случайный доступ к файлам (RandomAccessFile).
+
+Блокирующий I/O (операции ждут завершения), что неэффективно для высоконагруженных систем.
 
 ### 3. Что такое Java NIO?
+Java NIO (New Input/Output) — это API из пакета java.nio, введённый в Java 1.4, который предоставляет более производительную и масштабируемую модель ввода-вывода по сравнению с java.io.
+
+Основные особенности:
++	Работа через каналы (Channel)
++	Использование буферов (Buffer)
++	Поддержка неблокирующего режима
++	Возможность обслуживать несколько соединений одним потоком (через Selector)
+
+Основные компоненты:
+1. Buffer
+   Контейнер для данных.
+Примеры:
+   + ByteBuffer
+   + CharBuffer
+   + IntBuffer
+
+Буфер имеет состояние:
++	position
++	limit
++	capacity
+
+При чтении данных:
+ + Заполняем буфер
+ + Вызываем ```flip()```
+ + Читаем данные
+ + Вызываем ```clear()``` или ```compact()```
+
+
+2. Channel (объект NIO, представляющий соединение с источником данных (файл, сокет и т.д.), который передаёт данные через Buffer)
+   
+Двунаправленный объект для передачи данных.
+
+Примеры:
+   +	FileChannel
+   +	SocketChannel
+   +	ServerSocketChannel
+   
+В отличие от Stream в IO, Channel может:
+   +	читать
+   +	писать
+   +	работать в неблокирующем режиме
+3.  Selector (это объект из пакета java.nio.channels, который позволяет одному потоку отслеживать несколько каналов и определять, какие из них готовы к операциям чтения или записи.)
+
+<p align="center">
+  <img src="imgs-io/selects.png" width="" height="" alt="Compile process">
+</p>
+
+Позволяет одному потоку отслеживать несколько каналов.
+
+Используется в сетевых серверах для:
++	обработки множества соединений
++	масштабируемости
+
+По умолчанию каналы блокирующие.
+
+Неблокирующий режим включается явно:
+        
+    channel.configureBlocking(false);
+В неблокирующем режиме:
++	метод read() возвращает 0, если данных нет
++	поток не блокируется
+
+Различия IO/NIO
+
+| IO                           | NIO                           |
+| ---------------------------- | ----------------------------- |
+| Потокоориентированный        | Буфер-ориентированный         |
+| Всегда блокирующий           | Может быть неблокирующим      |
+| Один поток = одно соединение | Один поток = много соединений |
+| Stream                       | Channel + Buffer              |
 
 ### 4. Что такое NIO.2?
+NIO.2 (введено в Java 7) — расширение NIO для работы с файловой системой (пакет java.nio.file). Оно предоставляет Path, Files, FileSystem для манипуляции файлами, директориями, атрибутами. NIO.2 делает файловый I/O более удобным и платформо-независимым.
++ Path: Абстрактный путь к файлу/директории.
++ Files: Утилитный класс с методами createFile, copy, move, readAllLines и т.д.
++ Поддержка символических ссылок, атрибутов (POSIX, DOS).
++ Асинхронный I/O через AsynchronousFileChannel.
++ WatchService для мониторинга изменений в файловой системе.
+
+```java
+import java.nio.file.*;
+import java.util.*;
+
+public class NIO2Example {
+    public static void main(String[] args) throws Exception {
+        Path path = Paths.get("file.txt");
+        Files.write(path, "Hello NIO.2".getBytes());
+        List<String> lines = Files.readAllLines(path);
+        System.out.println(lines);
+    }
+}
+```
+
+| Характеристика                | **Java IO (1.0–1.4)**                                                   | **Java NIO (1.4)**                                                                                           | **Java NIO.2 (7+)**                                                                                                            |
+| ----------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
+| **Модель работы**             | Потокоориентированный (Stream)                                          | Буфер-ориентированный (Channel + Buffer)                                                                     | Расширение NIO с фокусом на файловую систему и асинхронный I/O                                                                 |
+| **Блокировка**                | Всегда блокирующий                                                      | Может быть блокирующим или неблокирующим (для сетевых каналов)                                               | Асинхронные операции через `AsynchronousFileChannel`, WatchService; файловые операции могут быть блокирующими или асинхронными |
+| **Работа с файлами**          | Через `File`, `FileInputStream`, `FileOutputStream`, `Reader`, `Writer` | Через `FileChannel` + `Buffer`                                                                               | Через `Path`, `Files`, `FileSystem`, поддержка символических ссылок, атрибутов и WatchService                                  |
+| **Работа с сетью**            | Через `Socket`, `ServerSocket` (блокирующие)                            | Через `SocketChannel`, `ServerSocketChannel`, `DatagramChannel` (поддержка неблокирующего режима + Selector) | Использует те же каналы, но добавлены асинхронные файловые операции; Selector остаётся из NIO                                  |
+| **Буферизация**               | Через `BufferedReader`, `BufferedInputStream` (опционально)             | Через `ByteBuffer`, `CharBuffer` (обязательна для каналов)                                                   | Та же, плюс можно использовать для асинхронных файловых операций                                                               |
+| **Масштабируемость**          | Низкая — 1 поток = 1 соединение                                         | Высокая — Selector позволяет одному потоку обслуживать несколько соединений                                  | Высокая, плюс удобная работа с файловой системой и асинхронный I/O                                                             |
+| **Zero-copy / эффективность** | Нет                                                                     | Есть (`transferTo`, `transferFrom`)                                                                          | Есть, плюс эффективная работа с файлами и WatchService                                                                         |
+| **Поддержка асинхронности**   | Нет                                                                     | Неблокирующий режим для каналов                                                                              | Асинхронный I/O через `AsynchronousFileChannel`, события файловой системы через WatchService                                   |
+| **Пример классов**            | `InputStream`, `OutputStream`, `Reader`, `Writer`, `File`               | `FileChannel`, `SocketChannel`, `ServerSocketChannel`, `DatagramChannel`, `ByteBuffer`                       | `Path`, `Files`, `FileSystem`, `WatchService`, `AsynchronousFileChannel`                                                       |
 
 ### 5. Что такое Scanner?
+Scanner — класс в java.util для парсинга входных данных из различных источников (InputStream, File, String). Он разбивает данные на токены по разделителям (по умолчанию — пробелы) и предоставляет методы для чтения примитивов (int, double) или строк.
 
++ Удобен для чтения из консоли или файлов.
++ Поддерживает регулярные выражения для поиска.
++ Не закрывает источник автоматически; нужно закрывать Scanner.
++ Может бросать InputMismatchException если тип не совпадает.
++ Локализация: Учитывает Locale для чисел (точка/запятая).
+
+```java
+import java.util.Scanner;
+
+public class ScannerExample {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Введите число: ");
+        int num = scanner.nextInt();
+        System.out.print("Введите строку: ");
+        String str = scanner.next();
+        System.out.println("Число: " + num + ", Строка: " + str);
+        scanner.close();
+    }
+}
+```
 ### 6. Как работает Scanner внутри?
+Scanner (парсер) работает на основе буферизированного чтения и парсинга. Он использует BufferedReader (для символьных источников) или InputStream, разбивает данные на токены с помощью Pattern (регулярные выражения).
+
+Внутри:
++ читает данные из источника;
++ буферизует их;
++ разбивает на токены;
++ преобразует токены в типы.
+
+```xml
+Архитектура внутри
+InputStream / Readable
+↓
+InputStreamReader (если байты)
+↓
+CharBuffer
+↓
+Pattern (delimiter)
+↓
+Matcher
+↓
+Tokenizer → nextInt()/next()
+```
+1. Источник данных
+
+Scanner работает с интерфейсом: Readable
+
+Поэтому он принимает:
++ InputStream
++ File
++ Path
++ String
++ ReadableByteChannel
++ Readable
+
+Если источник байтовый:
+
+    InputStream → InputStreamReader → chars
+
+2. Буфер
+   
+Scanner использует внутренний:
+
+    CharBuffer / char[]
+
+Особенности:
+читает блоками, а не по символу;
+хранит непрочитанные данные;
+поддерживает lookahead (hasNext()).
+
+3. Delimiter (разделитель)
+
+
+    \p{javaWhitespace}+ //по умолчанию пробелы, табы, переносы строк
+
+Можно изменить:
+
+    scanner.useDelimiter(",");
+
+4. Tokenizer
+
+Scanner НЕ читает числа напрямую.
+
+Он:
++ ищет токен regex-ом
++ выделяет строку
++ парсит её
+
+Пример ```nextInt()```:
+
+                        "123 abc"
+                            ↑
+                     regex delimiter
+
+Внутри:
+
+    Pattern.compile(delimiter).matcher(buffer)
+5.  Парсинг типов
+
+
+    nextInt()
+    внутри:
+    String token → Integer.parseInt(token)
+6.  Lookahead механизм
+
+Методы:
++ ```hasNext()```
++ ```hasNextInt()```
+
+НЕ двигают курсор.
+
+Scanner:
++ кэширует найденный токен
++ потом отдаёт его ```next()```.
+
+    nextInt(); / nextLine();
+    nextInt() не съедает \n.
+
+Поэтому:
++ scanner.nextInt();
++ scanner.nextLine(); // очистка
+
+Scanner НЕ thread-safe.
+
+Производительность Scanner:
+
++ использует regex
++ делает parsing
++ создаёт объекты
++ поэтому он медленный.
 
 ### 7. Какие базовые методы существуют в Scanner?
+Базовые методы:
 
++ ```next()```: Читает следующий токен как String.
++ ```nextInt()```, nextDouble(), nextLong() и т.д.: Читает токен как примитив.
++ ```nextLine()```: Читает строку до \n (после next() может потребоваться для очистки).
++ ```hasNext()```, hasNextInt() и т.д.: Проверяет наличие следующего токена/типа.
++ ```useDelimiter(Pattern/String)```: Устанавливает разделитель.
++ ```findInLine(String)```: Ищет по regex в текущей строке.
++ ```skip(Pattern)```: Пропускает токены по regex.
++ ```close()```: Закрывает сканер.
+
+Нюансы: ```nextLine()``` после ```nextInt()``` читает пустую строку из-за оставшегося ```\n``` — фикс: добавить ```nextLine()``` для очистки.
+
+```java
+Scanner sc = new Scanner("1 2.5 hello");
+int i = sc.nextInt(); // 1
+double d = sc.nextDouble(); // 2.5
+String s = sc.next(); // hello
+```
 ### 8. Что такое байтовый поток? Как он реализован внутри?
+Байтовый поток — это поток для работы с сырыми байтами (8-битными данными), без учета кодировок. Базовые классы: InputStream (ввод), OutputStream (вывод). Реализация:
 
+```java
+Java API
+   ↓
+FileDescriptor
+   ↓
+Native OS call (read/write)
+
+FileInputStream.readBytes() → native  методы для взаимодействия с ОС
+```
+
+Основные реализации
++ FileInputStream
++ ByteArrayInputStream
++ BufferedInputStream
++ FilterInputStream
+
+```text
+read() возвращает int
+0..255  → byte
+-1      → EOF
+```
+
+Применение:
++ изображения;
++ архивы;
++ бинарные протоколы.
+
+```java
+byte[] bytes = new byte[1024];
+int len;
+while ((len = inputStream.read(bytes)) != -1) {
+    // обработка
+}
+```
 ### 9. Что такое символьный поток? Как он реализован внутри?
+Символьный поток — для работы с символами (16-бит Unicode), учитывая кодировки. Базовые: Reader (ввод), Writer (вывод).
 
+    bytes → CharsetDecoder → chars
+
+Внутри:
++ читает байты
++ декодирует Charset (преобразует байты в символы с помощью Charset (InputStreamReader использует StreamDecoder))
++ выдаёт ```char[]```
+
+Реализация:
++ FileReader
++ BufferedReader
++ CharArrayReader
+
+Кодировка по умолчанию — платформенная, лучше указывать (new InputStreamReader(is, "UTF-8"))
+
+```java
+try (BufferedReader reader =
+         new BufferedReader(
+             new InputStreamReader(
+                 new FileInputStream("file.txt"),
+                 StandardCharsets.UTF_8))) {
+
+    char[] buffer = new char[1024];
+    int len;
+
+    while ((len = reader.read(buffer)) != -1) {
+        System.out.print(new String(buffer, 0, len));
+    }
+}
+
+String text = Files.readString(
+        Path.of("file.txt"),
+        StandardCharsets.UTF_8
+);
+```
 ### 10. Что такое буферизированный поток?
+Буферизированный поток — обертка над потоком, которая использует буфер (массив) для накопления данных перед чтением/записью. Это снижает количество вызовов ОС, повышая производительность для частых мелких операций.
+
+    read() → syscall → read() → syscall
+
+С буфером
+
+    read 8192 bytes once (по умолчанию)
+    работаем из RAM
+
+Байтовые
++ BufferedInputStream
++ BufferedOutputStream
+
+Символьные
++ BufferedReader
++ BufferedWriter
+
+Нюансы
++ Автоматический flush при close() или заполнении.
++ Для ввода: Читает большими блоками.
++ Для вывода: Записывает большими блоками.
+
 
 ### 11. Какие классы-обёртки позволяют ускорить чтение/запись за счет использования буфера?
++ BufferedInputStream: Для байтового ввода.
++ BufferedOutputStream: Для байтового вывода.
++ BufferedReader: Для символьного ввода (добавляет readLine()).
++ BufferedWriter: Для символьного вывода.
 
+Можно указать размер буфера/кодировку в конструкторе.
+
+```java
+try (BufferedReader br =
+         new BufferedReader(
+             new InputStreamReader(
+                 new FileInputStream("file.txt"),
+                 StandardCharsets.UTF_8),
+             32 * 1024)) {
+
+    String line;
+    while ((line = br.readLine()) != null) {
+        System.out.println(line);
+    }
+}
+
+
+try (BufferedReader br =
+         Files.newBufferedReader(
+             Path.of("file.txt"),
+             StandardCharsets.UTF_8)) {
+
+    br.lines().forEach(System.out::println);
+}
+```
 ### 12. Как осуществляется ввод и вывод из командной строки?
+Ввод: Через System.in (InputStream), часто оборачивают в Scanner или BufferedReader. Вывод: Через System.out (PrintStream) или System.err для ошибок.
 
+```java
+System.in
+        ↓
+InputStreamReader
+        ↓
+BufferedReader / Scanner
+```
+
++	System.in — байтовый, для текста — InputStreamReader;
++	System.out — с auto-flush при println();
++	System.err - ошибок.
++ Для пароля — Console.readPassword().
+
+```java
+JavaBufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+String input = br.readLine();
+System.out.println(input);
+```
 ### 13. Что такое класс Console? Расскажите его АПИ.
+Console — класс java.io.Console для интерактивного ввода/вывода в консоли (не работает в IDE, только в терминале), защищён для ввода паролей. Получается через System.console().API:
 
++ reader(): Возвращает Reader.
++ writer(): Возвращает PrintWriter.
++ readLine(String fmt, Object... args): Читает строку с prompt.
++ readPassword(String fmt, Object... args): Читает пароль без эха.
++ printf(String fmt, Object... args): Форматированный вывод.
++ flush(): Сброс.
+
+Если null — консоль недоступна. Безопасен для паролей (массив char[]).
+
+```java
+JavaConsole console = System.console();
+if (console != null) {
+    String name = console.readLine("Имя: ");
+    char[] pass = console.readPassword("Пароль: ");
+    console.printf("Привет, %s\n", name);
+}
+```
 ### 14. Что такое поток данных? Data stream.
 
 ### 15. Что такое поток объектов, Object stream.
