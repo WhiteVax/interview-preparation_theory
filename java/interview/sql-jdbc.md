@@ -1,35 +1,35 @@
 ## *SQL-JDBC*
 
-- [Что такое SQL?]()
-- [Что такое DML и DDL?]()
-- [Что такое первичный ключ?]()
-- [Что такое внешний ключ?]()
-- [Какие виды связей между таблицами существуют и как они организуются?]()
-- [Опишите как вставить, удалить, обновить данные в(из) таблицу(ы).]()
-- [Что такое нормализация БД?]()
-- [Что такое денормализация БД? Для чего она нужна?]()
-- [Что такое кластерный и некластерный индексы?]()
-- [Какие типы соединений (join) таблиц существуют? В чем их разница?]()
-- [Что такое SQL курсор?]()
-- [Опишите шаги по созданию и использованию курсора.]()
-- [Что такое транзакция?]()
-- [Что такое триггер? Какие типы триггеров Вы знаете?]()
-- [В чем разница между where и having?]()
-- [Что такое подзапрос (sub-query)?]()
-- [Что такое union?]()
-- [Что такое group by?]()
-- [Что такое хранимые процедуры?]()
-- [Что такое view (Представление)?]()
-- [Что такое JDBC?]()
-- [Что нужно для работы с той или иной БД?]()
-- [Как зарегистрировать драйвер?]()
-- [Как получить Connection?]()
-- [Что такое Statement, PreparedStatement? В чем разница между ними?]()
-- [Что такое ResultSet?]()
-- [В чем разница между методами execute, executeUpdate, executeQuery?]()
-- [Можно ли использовать возвращаемое значение execute() для проверки, что что-то обновилось?]()
-- [Как получить при вставке сгенерированные ключи? Как это сделать на чистом sql?]()
-- [Для чего используется конструкция try-with-resources?]()
+- [Что такое SQL?](#1-что-такое-sql)
+- [Что такое DML и DDL?](#2-что-такое-dml-и-ddl)
+- [Что такое первичный ключ?](#3-что-такое-первичный-ключ)
+- [Что такое внешний ключ?](#4-что-такое-внешний-ключ)
+- [Какие виды связей между таблицами существуют и как они организуются?](#5-какие-виды-связей-между-таблицами-существуют-и-как-они-организуются)
+- [Опишите как вставить, удалить, обновить данные в(из) таблицу(ы).](#6-опишите-как-вставить-удалить-обновить-данные-виз-таблицуы)
+- [Что такое нормализация БД?](#7-что-такое-нормализация-бд)
+- [Что такое денормализация БД? Для чего она нужна?](#8-что-такое-денормализация-бд-для-чего-она-нужна)
+- [Что такое кластерный и некластерный индексы?](#9-что-такое-кластерный-и-некластерный-индексы)
+- [Какие типы соединений (join) таблиц существуют? В чем их разница?](#10-какие-типы-соединений-join-таблиц-существуют-в-чем-их-разница)
+- [Что такое SQL курсор?](#11-что-такое-sql-курсор)
+- [Опишите шаги по созданию и использованию курсора.](#12-опишите-шаги-по-созданию-и-использованию-курсора)
+- [Что такое транзакция?](#13-что-такое-транзакция)
+- [Что такое триггер? Какие типы триггеров Вы знаете?](#14-что-такое-триггер-какие-типы-триггеров-вы-знаете)
+- [В чем разница между where и having?](#15-в-чем-разница-между-where-и-having)
+- [Что такое подзапрос (sub-query)?](#16-что-такое-подзапрос-sub-query)
+- [Что такое union?](#17-что-такое-union)
+- [Что такое group by?](#18-что-такое-group-by)
+- [Что такое хранимые процедуры?](#19-что-такое-хранимые-процедуры)
+- [Что такое view (Представление)?](#20-что-такое-view-представление)
+- [Что такое JDBC?](#21-что-такое-jdbc)
+- [Что нужно для работы с той или иной БД?](#22-что-нужно-для-работы-с-той-или-иной-бд)
+- [Как зарегистрировать драйвер?](#23-как-зарегистрировать-драйвер)
+- [Как получить Connection?](#24-как-получить-connection)
+- [Что такое Statement, PreparedStatement? В чем разница между ними?](#25-что-такое-statement-preparedstatement-в-чем-разница-между-ними)
+- [Что такое ResultSet?](#26-что-такое-resultset)
+- [В чем разница между методами execute, executeUpdate, executeQuery?](#27-в-чем-разница-между-методами-execute-executeupdate-executequery)
+- [Можно ли использовать возвращаемое значение execute() для проверки, что что-то обновилось?](#28-можно-ли-использовать-возвращаемое-значение-execute-для-проверки-что-что-то-обновилось)
+- [Как получить при вставке сгенерированные ключи? Как это сделать на чистом sql?](#29-как-получить-при-вставке-сгенерированные-ключи-как-это-сделать-на-чистом-sql)
+- [Для чего используется конструкция try-with-resources?](#30-для-чего-используется-конструкция-try-with-resources)
 
 ---
 
@@ -1428,23 +1428,1081 @@ ON right.col = value
 | SELF  | Таблица сама с собой       |
 
 ### 11. Что такое SQL курсор?
+Курсор (Cursor) — это объект базы данных, позволяющий построчно читать результат запроса, не загружая всю выборку в память сразу.
+
+Используется для:
++ обработки больших наборов данных;
++ пошагового чтения результата;
++ процедур и функций;
++ streaming-обработки.
+
+В PostgreSQL курсор — это указатель на результат SELECT.
+
+Когда применяют курсоры в PostgreSQL
++ Используются, если:
++ результат запроса очень большой;
++ нужно читать данные частями;
++ требуется логика обработки строк по одной;
++ нужно избежать загрузки всей выборки в память клиента.
+
+В PostgreSQL курсоры чаще применяются для streaming, а не для бизнес-логики.
+
+Жизненный цикл курсора
++ DECLARE — объявление курсора
++ OPEN — открытие (выполнение запроса)
++ FETCH — получение строк
++ CLOSE — закрытие курсора
+
+DEALLOCATE в PostgreSQL обычно не нужен — ресурсы освобождаются автоматически.
+
+Пример курсора в PostgreSQL
+```sql
+BEGIN;
+
+DECLARE emp_cursor CURSOR FOR
+SELECT emp_id, name
+FROM employees;
+
+FETCH NEXT FROM emp_cursor;
+
+FETCH NEXT FROM emp_cursor;
+
+CLOSE emp_cursor;
+
+COMMIT;
+```
+Курсоры в PL/pgSQL (функции)
+
+Частый вариант использования:
+```sql
+DO $$
+DECLARE
+    rec RECORD;
+    cur CURSOR FOR
+        SELECT emp_id, name FROM employees;
+BEGIN
+    OPEN cur;
+
+    LOOP
+        FETCH cur INTO rec;
+        EXIT WHEN NOT FOUND;
+
+        RAISE NOTICE '%', rec.name;
+    END LOOP;
+
+    CLOSE cur;
+END $$;
+```
+
+PostgreSQL активно использует курсоры для:
++ pagination без OFFSET
++ streaming результатов
++ работы JDBC (fetchSize)
++ server-side cursors
+
+Например, JDBC-драйвер PostgreSQL автоматически создаёт курсор при:
+
+	statement.setFetchSize(100);
+
+Типы курсоров в PostgreSQL
++ По прокрутке
+  NO SCROLL — только вперёд (быстрее)
+  SCROLL — можно двигаться вперёд и назад
+  DECLARE cur SCROLL CURSOR FOR SELECT * FROM employees;
+
++ По времени жизни
+
+WITH HOLD
+
+Курсор остаётся доступным после COMMIT.
+
+DECLARE cur CURSOR WITH HOLD FOR SELECT * FROM employees;
+
+WITHOUT HOLD (по умолчанию)
+
+Закрывается после COMMIT.
+
+Курсоры:
++ работают строка-за-строкой (RBAR);
++ медленнее set-based операций;
++ удерживают ресурсы соединения;
++ могут держать транзакцию открытой.
+
+Что использовать вместо курсоров
+
+В PostgreSQL обычно применяют:
++ UPDATE ... FROM
++ INSERT ... SELECT
++ CTE (WITH)
++ оконные функции
++ агрегаты
++ RETURNING
+
+Пример без курсора
+
+Плохо — обработка строк по одной
+
+Хорошо:
+```sql
+UPDATE employees
+SET salary = salary * 1.1
+WHERE dept_id = 10;
+```
 ### 12. Опишите шаги по созданию и использованию курсора.
+Курсоры в PostgreSQL (PL/pgSQL)
+
+1. Что такое курсор
+   Курсор — это объект базы данных, позволяющий обрабатывать результат SELECT-запроса построчно.
+   Используется, когда нужно работать с данными по одной строке (итеративная обработка).
+
+2. Шаги работы с курсором в PostgreSQL
+
++ DECLARE — объявление курсора
++ OPEN — открытие курсора (выполнение SELECT)
++ FETCH — извлечение строк
++ CLOSE — закрытие курсора
+
+В PostgreSQL освобождение ресурсов происходит автоматически при завершении блока или транзакции.
+
+3. Основной синтаксис (PL/pgSQL)
+```sql
+DO $$
+DECLARE
+    emp_name TEXT;
+    cur CURSOR FOR SELECT name FROM employees;
+BEGIN
+    OPEN cur;
+
+    LOOP
+        FETCH cur INTO emp_name;
+        EXIT WHEN NOT FOUND;
+
+        RAISE NOTICE 'Employee: %', emp_name;
+    END LOOP;
+
+    CLOSE cur;
+END $$;
+```
+4. Проверка окончания курсора
+   + В PostgreSQL используется:
+     + NOT FOUND — аналог @@FETCH_STATUS в SQL Server.
+   + Если строк больше нет — переменная NOT FOUND становится TRUE.
+
+5. Типы курсоров
+- READ ONLY (по умолчанию)
+- FOR UPDATE — позволяет изменять выбранные строки
+
+Пример:
+```sql
+DECLARE cur CURSOR FOR
+SELECT * FROM employees FOR UPDATE;
+```
+6. Использование в транзакциях
+   + Курсор живёт внутри транзакции.
+   + После COMMIT или ROLLBACK курсор автоматически закрывается.
+
+7. Нюансы работы
+- Курсоры полезны при сложной логике обработки.
+- Для обычных операций лучше использовать set-based запросы.
+- Изменения данных во время FETCH зависят от типа курсора и уровня изоляции.
+
+8. Альтернатива — FOR LOOP (рекомендуемый способ)
+```sql
+DO $$
+DECLARE
+    rec RECORD;
+BEGIN
+    FOR rec IN SELECT name FROM employees LOOP
+        RAISE NOTICE 'Employee: %', rec.name;
+    END LOOP;
+END $$;
+```
+Этот способ проще и используется чаще, чем явные курсоры.
 ### 13. Что такое транзакция?
+Транзакция — это логическая единица работы с БД, состоящая из одной или нескольких операций, которая выполняется полностью или не выполняется вообще.
+
+Свойства ACID
+1. Atomicity (Атомарность)
+
+Все операции выполняются целиком или откатываются.
+```sql
+BEGIN;
+UPDATE accounts SET balance = balance - 100 WHERE id = 1;
+UPDATE accounts SET balance = balance + 100 WHERE id = 2;
+COMMIT;
+```
+Если второй UPDATE упал → выполняется ROLLBACK.
+
+2. Consistency (Согласованность)
+
+После транзакции БД остаётся в корректном состоянии:
+
+соблюдаются ограничения (PK, FK, CHECK)
+
+нет «битых» данных
+
+3. Isolation (Изоляция)
+
+Параллельные транзакции не должны мешать друг другу.
+
+Уровни изоляции определяют степень «видимости» изменений.
+
+4. Durability (Долговечность)
+
+После COMMIT данные не потеряются даже при сбое (журналы транзакций).
+
+Основные команды
++ BEGIN TRANSACTION;  -- или BEGIN
++ COMMIT;             -- зафиксировать
++ ROLLBACK;           -- откат
+
+Проблемы
+
+| Проблема            | Описание                                |
+| ------------------- | --------------------------------------- |
+| Dirty Read          | чтение незакоммиченных данных           |
+| Non-repeatable Read | повторный SELECT даёт разные результаты |
+| Phantom Read        | появляются новые строки                 |
+
+| Уровень          | Dirty | Non-repeatable | Phantom |
+| ---------------- | ----- | -------------- | ------- |
+| READ UNCOMMITTED | ✔     | ✔              | ✔       |
+| READ COMMITTED   | ✖     | ✔              | ✔       |
+| REPEATABLE READ  | ✖     | ✖              | ✔       |
+| SERIALIZABLE     | ✖     | ✖              | ✖       |
+
+```sql
+SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+BEGIN;
+SELECT * FROM employees WHERE dept_id = 10;
+```
+	SAVEPOINT (частичный откат)
+Полезно, если нужно откатить часть операций:
+```sql
+BEGIN;
+UPDATE employees SET salary = salary * 1.1;
+SAVEPOINT sp1;
+DELETE FROM employees WHERE salary > 100000;
+ROLLBACK TO sp1;
+COMMIT;
+```
+Автокоммит
+
+Во многих СУБД:
++ каждый запрос = отдельная транзакция
+
+В PostgreSQL / MySQL:
++ SET autocommit = 0;
+
+Пример с ошибкой
+```sql
+BEGIN;
+
+UPDATE accounts SET balance = balance - 100 WHERE id = 1;
+
+-- ошибка (например, id=2 не существует)
+UPDATE accounts SET balance = balance + 100 WHERE id = 2;
+
+ROLLBACK;
+```
+
+Транзакции в JDBC (для Java)
+
+По умолчанию — autocommit = true
+```java
+Connection conn = dataSource.getConnection();
+conn.setAutoCommit(false);
+
+try {
+    PreparedStatement ps1 = conn.prepareStatement(
+        "UPDATE accounts SET balance = balance - 100 WHERE id = ?");
+    ps1.setInt(1, 1);
+    ps1.executeUpdate();
+
+    PreparedStatement ps2 = conn.prepareStatement(
+        "UPDATE accounts SET balance = balance + 100 WHERE id = ?");
+    ps2.setInt(1, 2);
+    ps2.executeUpdate();
+
+    conn.commit();
+} catch (Exception e) {
+    conn.rollback();
+}
+```
+Нюансы
+1. Долгие транзакции — плохо
++ держат блокировки
++ ухудшают производительность
+
+2. COMMIT снимает блокировки
+
+ROLLBACK тоже освобождает ресурсы.
+
+3. Deadlock (взаимная блокировка)
+
+Если две транзакции ждут друг друга — СУБД принудительно откатит одну.
+
+4. READ COMMITTED — самый популярный уровень
+
+Используется по умолчанию в:
++ PostgreSQL
++ Oracle
++ SQL Server
 ### 14. Что такое триггер? Какие типы триггеров Вы знаете?
+Trigger (триггер) — объект БД, который автоматически выполняет функцию при событии:
++ INSERT
++ UPDATE
++ DELETE
++ TRUNCATE
++ DDL-события
++ системные события
+
+В PostgreSQL триггер НЕ содержит код напрямую.
+Он вызывает функцию.
+Это главное отличие от SQL Server.
+
+1. DML-триггеры
+
+Срабатывают при изменении данных.
+
+Типы по времени выполнения
+
+| Тип        | Когда выполняется          |
+| ---------- | -------------------------- |
+| BEFORE     | До операции                |
+| AFTER      | После операции             |
+| INSTEAD OF | Вместо операции (для VIEW) |
+
+
+Пример `AFTER INSERT` (PostgreSQL)
+
+Шаг 1 — функция триггера
+```sql
+CREATE OR REPLACE FUNCTION trg_after_insert_fn()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    INSERT INTO audit_log(action, emp_id)
+    VALUES ('INSERT', NEW.emp_id);
+
+    RETURN NEW;
+END;
+$$;
+```
+Шаг 2 — создание триггера
+```sql
+CREATE TRIGGER trg_after_insert
+AFTER INSERT ON employees
+FOR EACH ROW
+EXECUTE FUNCTION trg_after_insert_fn();
+```
+
+Главное отличие от SQL Server
+
+| SQL Server                   | PostgreSQL                 |
+| ---------------------------- | -------------------------- |
+| inserted / deleted таблицы   | NEW / OLD записи           |
+| код внутри trigger           | trigger → вызывает функцию |
+| statement-level по умолчанию | row-level чаще             |
+
+2. BEFORE Trigger (валидация)
+
+Аналог Oracle `:NEW`.
+```sql
+CREATE OR REPLACE FUNCTION trg_salary_check()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    IF NEW.salary < 0 THEN
+        RAISE EXCEPTION 'Salary cannot be negative';
+    END IF;
+
+    RETURN NEW;
+END;
+$$;
+CREATE TRIGGER trg_salary_check
+BEFORE INSERT OR UPDATE ON employees
+FOR EACH ROW
+EXECUTE FUNCTION trg_salary_check();
+```
+3. INSTEAD OF Trigger (для VIEW)
+
+PostgreSQL поддерживает INSTEAD OF.
+```sql
+CREATE OR REPLACE FUNCTION trg_view_insert_fn()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    INSERT INTO employees(name, dept_id)
+    VALUES (NEW.name, NEW.dept_id);
+
+    RETURN NEW;
+END;
+$$;
+CREATE TRIGGER trg_view_insert
+INSTEAD OF INSERT ON employee_view
+FOR EACH ROW
+EXECUTE FUNCTION trg_view_insert_fn();
+```
+4. DDL-триггеры (Event Triggers)
+
+В PostgreSQL они называются:
+
+`EVENT TRIGGER`
+```sql
+CREATE OR REPLACE FUNCTION ddl_logger()
+RETURNS event_trigger
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RAISE NOTICE 'DDL command executed';
+END;
+$$;
+CREATE EVENT TRIGGER trg_ddl
+ON ddl_command_end
+EXECUTE FUNCTION ddl_logger();
+```
+DDL события
++ ddl_command_start
++ ddl_command_end
++ sql_drop
++ table_rewrite
+
+5. Доступ к данным внутри триггера
+   
+PostgreSQL аналоги
+
+| Oracle | SQL Server | PostgreSQL |
+| ------ | ---------- | ---------- |
+| :NEW   | inserted   | NEW        |
+| :OLD   | deleted    | OLD        |
+```sql
+UPDATE пример
+IF NEW.salary <> OLD.salary THEN
+    INSERT INTO audit_log VALUES (...);
+END IF;
+```
+6. Row vs Statement Trigger (важно)
+   + Row-level
+   + FOR EACH ROW
+
+Вызывается для каждой строки.
+
++ Statement-level
++ FOR EACH STATEMENT
+
+Вызывается 1 раз на запрос.
+
+7. Триггеры работают в транзакции
+
+Если внутри:
+
++ RAISE EXCEPTION;
++ откатится:
++ trigger
+
+INSERT / UPDATE / DELETE
+
+8. Рекурсивные триггеры
+
+Если trigger изменяет ту же таблицу:
+
+UPDATE employees ...
+→ возможна рекурсия.
+
+Проверяют так:
+
+	IF TG_OP = 'UPDATE' THEN
+
+или используют guard-условия.
+
+9. Когда используют
+
++ аудит изменений
++ логирование
++ денормализация
++ автоматические вычисления
++ контроль данных
+
+Когда НЕ использовать
+
++ бизнес-логика
++ интеграции
++ массовые batch операции
+
+Лучше:
++ constraints
++ application layer
++ stored procedures
+
+PostgreSQL имеет:
+
+Transition Tables (аналог inserted/deleted)
+```sql
+CREATE TRIGGER trg_bulk
+AFTER UPDATE ON employees
+REFERENCING NEW TABLE AS new_table
+FOR EACH STATEMENT
+EXECUTE FUNCTION fn_bulk();
+```
+можно получить все изменённые строки сразу.
 ### 15. В чем разница между where и having?
+
+| WHERE                                  | HAVING                                         |
+| -------------------------------------- | ---------------------------------------------- |
+| Фильтрует **строки**                   | Фильтрует **группы**                           |
+| Выполняется **до GROUP BY**            | Выполняется **после GROUP BY**                 |
+| Нельзя использовать агрегатные функции | Можно использовать агрегаты                    |
+| Работает быстрее (фильтрация раньше)   | Медленнее (работает по результату группировки) |
+
+Порядок выполнения SQL-запроса (логический)
++ `FROM`
++ `JOIN`
++ `WHERE`
++ `GROUP BY`
++ `HAVING`
++ `SELECT`
++ `ORDER BY`
+
+```SQL
+SELECT dept_id, COUNT(*) AS cnt
+FROM employees
+WHERE salary > 50000       -- фильтр строк
+GROUP BY dept_id
+HAVING COUNT(*) > 10;      -- фильтр групп
+```
+
++ Сначала отбираются сотрудники с зарплатой > 50000
++ Потом группировка по dept_id
++ Потом остаются только группы с количеством > 10
+
+Почему агрегаты нельзя в `WHERE`
+```sql
+Неправильно:
+-- Ошибка
+SELECT dept_id
+FROM employees
+WHERE COUNT(*) > 10
+GROUP BY dept_id;
+Причина: на этапе WHERE ещё нет групп и агрегатов.
+```
+
+Неправильно:
+```SQL
+-- Ошибка
+SELECT dept_id
+FROM employees
+WHERE COUNT(*) > 10
+GROUP BY dept_id;
+```
+
+Правильный запрос по производительности
+```SQL
+SELECT dept_id, COUNT(*)
+FROM employees
+WHERE status = 'ACTIVE'
+GROUP BY dept_id
+HAVING COUNT(*) > 10;
+```
+
++ `WHERE` уменьшает объём данных до группировки
++ меньше памяти и вычислений
+
+
+HAVING используют - когда нужно фильтровать по:
++ COUNT()
++ SUM()
++ AVG()
++ MIN()/MAX()
++ любым агрегатным условиям
+```sql
+SELECT dept_id, SUM(salary) AS total
+FROM employees
+GROUP BY dept_id
+HAVING SUM(salary) > 100000;
+```
+
+Можно ли использовать `HAVING` без `GROUP BY`?
+
+Да, но это считается плохой практикой, если можно использовать `WHERE`.
 ### 16. Что такое подзапрос (sub-query)?
+Подзапрос — это SQL-запрос, вложенный внутрь другого запроса.
+
+Он используется для получения промежуточных данных, которые применяются во внешнем запросе.
+
+Подзапрос может находиться в:
++ WHERE
++ SELECT
++ FROM
++ HAVING
++ INSERT / UPDATE / DELETE
+
+Виды подзапросов
+
+1. Скалярный (возвращает одно значение)
+
+Используется как обычное значение.
+```sql
+SELECT name
+FROM employees
+WHERE salary > (
+    SELECT AVG(salary) FROM employees
+);
+```
+Если подзапрос вернёт больше одной строки → ошибка.
+
+2. Множественный (возвращает набор значений)
+
+Используется с `IN`, `ANY`, `ALL`.
+```sql
+SELECT name
+FROM employees
+WHERE dept_id IN (
+    SELECT dept_id FROM departments WHERE location = 'Kyiv'
+);
+```
+3. Табличный (в FROM)
+```sql
+SELECT dept_id, avg_salary
+FROM (
+    SELECT dept_id, AVG(salary) AS avg_salary
+    FROM employees
+    GROUP BY dept_id
+) t
+WHERE avg_salary > 50000;
+```
+Это называется derived table.
+
+**Коррелированные и некоррелированные**
+
+Некоррелированный (независимый)
+
+Выполняется один раз:
+```sql
+SELECT name
+FROM employees
+WHERE salary > (
+    SELECT AVG(salary) FROM employees
+);
+```
+Коррелированный
+
+Зависит от внешнего запроса и выполняется для каждой строки.
+
+Пример :
+```sql
+SELECT name
+FROM employees e
+WHERE salary > (
+    SELECT AVG(salary)
+    FROM employees
+    WHERE dept_id = e.dept_id
+);
+```
+Минус: может работать медленно.
+
+EXISTS vs IN (частый вопрос)
+
+EXISTS
+
+Проверяет наличие строк (останавливается при первой найденной).
+```sql
+SELECT name
+FROM employees e
+WHERE EXISTS (
+    SELECT 1
+    FROM departments d
+    WHERE d.dept_id = e.dept_id
+);
+```
+Лучше для:
++ больших таблиц
++ коррелированных подзапросов
+
+`IN`
+
+Сравнивает со списком значений.
+```sql
+SELECT name
+FROM employees
+WHERE dept_id IN (
+    SELECT dept_id FROM departments
+);
+```
+Может работать медленнее на больших наборах.
+
+`ANY` и `ALL`
+```sql
+-- больше хотя бы одного
+WHERE salary > ANY (SELECT salary FROM employees WHERE dept_id = 10)
+
+-- больше всех
+WHERE salary > ALL (SELECT salary FROM employees WHERE dept_id = 10)
+```
+
+Подзапрос в `SELECT`
+```sql
+SELECT name,
+       (SELECT AVG(salary) FROM employees) AS avg_salary
+FROM employees;
+```
+Скалярный подзапрос.
+
+Когда лучше использовать `JOIN` вместо подзапроса
+
+Часто быстрее:
+```sql
+-- Подзапрос
+SELECT name
+FROM employees
+WHERE dept_id IN (SELECT dept_id FROM departments WHERE location = 'Kyiv');
+
+-- JOIN (обычно быстрее)
+SELECT e.name
+FROM employees e
+JOIN departments d ON e.dept_id = d.dept_id
+WHERE d.location = 'K';
+```
+Важные нюансы
+
+Подзапросы могут быть вложенными (глубина ограничена, например ~32 в SQL Server)
+
+Коррелированные подзапросы могут сильно снижать производительность
+
+`EXISTS` обычно быстрее `IN` при больших данных
+
+Скалярный подзапрос должен возвращать ровно одно значение
+
+В некоторых случаях оптимизатор преобразует подзапрос в `JOIN`
 ### 17. Что такое union?
+`UNION` — это оператор SQL, который объединяет результаты двух или более SELECT-запросов в один результирующий набор.
+
+Основные требования:
++ Одинаковое количество столбцов
++ Совместимые типы данных
++ Порядок столбцов должен совпадать
+
+| Оператор  | Поведение                                |
+| --------- | ---------------------------------------- |
+| `UNION`     | Удаляет дубликаты                        |
+| `UNION ALL` | Сохраняет все строки (включая дубликаты) |
+
+```SQL
+SELECT name FROM employees
+UNION
+SELECT name FROM managers;
+```
+
+Если нужны все строки:
+```sql
+SELECT name FROM employees
+UNION ALL
+SELECT name FROM managers;
+```
+`UNION` медленнее, потому что выполняет сортировку или хеширование для удаления дубликатов.
+
+Имена столбцов в результате берутся из первого SELECT:
+```sql
+SELECT name AS person_name FROM employees
+UNION
+SELECT name FROM managers;
+```
+
+`ORDER BY` - применяется ко всему объединённому результату, а не к отдельным SELECT:
+```sql
+SELECT name FROM employees
+UNION
+SELECT name FROM managers
+ORDER BY name;
+```
+
+Когда использовать `UNION`
++ объединение данных из разных таблиц
++ формирование отчётов
++ объединение исторических и текущих данных
++ эмуляция OR-логики между источниками
+
+Связанные операторы
+
+| Оператор                        | Описание            |
+| ------------------------------- | ------------------- |
+| INTERSECT                       | Только общие строки |
+| EXCEPT (SQL Server, PostgreSQL) | Разность множеств   |
+| MINUS (Oracle)                  | Аналог EXCEPT       |
+
+```sql
+SELECT name FROM employees
+INTERSECT
+SELECT name FROM managers;
+```
+
+1. `UNION` ≠ `JOIN`
+
++ `UNION` — объединяет строки
++ `JOIN` — объединяет столбцы
+
+2. Производительность
+
+Если дубликаты не важны — всегда использовать:
+
+`UNION ALL`
+
+Это стандартная рекомендация для production.
+
+Если типы различаются, СУБД попытается привести их:
+```sql
+SELECT 1
+UNION
+SELECT '1';
+```
 ### 18. Что такое group by?
+`GROUP BY` — это SQL операция, которая группирует строки по значениям одного или нескольких столбцов. После группировки можно применять агрегатные функции к каждой группе:
++ `SUM()` — сумма
++ `COUNT()` — количество
++ `AVG()` — среднее
++ `MIN() / MAX()` — минимальное / максимальное
+
+```sql
+SELECT column1, column2, AGG_FUNC(column3)
+FROM table
+WHERE condition
+GROUP BY column1, column2
+HAVING condition
+ORDER BY column1;
+```
+Основные нюансы
+
+Все неагрегированные столбцы должны быть в `GROUP BY`
+
+Неправильно:
+```sql
+SELECT dept_id, name, SUM(salary)
+FROM employees
+GROUP BY dept_id;
+-- Ошибка: name не в GROUP BY
+```
+Правильно:
+```sql
+SELECT dept_id, name, SUM(salary)
+FROM employees
+GROUP BY dept_id, name;
+```
+Порядок выполнения SQL
++ FROM / JOIN
++ WHERE
++ GROUP BY
++ HAVING
++ SELECT
++ ORDER BY
+
+Это объясняет, почему агрегаты нельзя использовать в `WHERE`, а только в `HAVING`.
+
+Дополнительные возможности
+
+| Функция       | Описание                                                |
+| ------------- | ------------------------------------------------------- |
+| `WITH ROLLUP`   | Добавляет строки с промежуточными и итоговыми суммами   |
+| `WITH CUBE`     | Добавляет все возможные комбинации агрегатных сумм      |
+| `GROUPING SETS` | Позволяет указать несколько группировок в одном запросе |
+
+```sql
+SELECT dept_id, job_id, SUM(salary)
+FROM employees
+GROUP BY dept_id, job_id WITH ROLLUP;
+```
+`HAVING`
+
+Используется для фильтрации групп после агрегирования:
+```sql
+SELECT dept_id, COUNT(*) AS emp_count
+FROM employees
+GROUP BY dept_id
+HAVING COUNT(*) > 10;
+```
+
+`ORDER BY` после группировки
+```sql
+SELECT dept_id, SUM(salary) AS total_salary
+FROM employees
+GROUP BY dept_id
+ORDER BY total_salary DESC;
+```
+
+Полный запрос
+```sql
+SELECT dept_id, job_id, COUNT(*) AS emp_count, SUM(salary) AS total_salary
+FROM employees
+WHERE status = 'ACTIVE'
+GROUP BY dept_id, job_id WITH ROLLUP
+HAVING SUM(salary) > 50000
+ORDER BY total_salary DESC;
+```
 ### 19. Что такое хранимые процедуры?
+Хранимая процедура — это заранее скомпилированный блок SQL-кода и логики (условия, циклы), хранящийся в базе данных, который можно вызывать многократно.
+
+Используется для:
++ автоматизации повторяющихся операций
++ инкапсуляции бизнес-логики на уровне БД
++ повышения безопасности и производительности
+
+Основные характеристики
++ Компилируются и хранятся в БД
++ Могут принимать входные, выходные и входно-выходные параметры
++ Могут выполнять транзакции (`COMMIT/ROLLBACK`)
++ Можно возвращать значения через `OUTPUT`-параметры или `RETURN`
+
+Преимущества
++ Производительность — компилируются заранее, уменьшают нагрузку на сеть
++ Безопасность — предотвращают SQL-инъекции при правильном использовании параметров
++ Модульность — логика централизована в БД
++ Повторное использование — один код для нескольких приложений
+
+Минусы
++ Сложнее отлаживать, чем обычные SQL-запросы
++ Vendor-lock: синтаксис зависит от СУБД
++ Могут усложнять архитектуру, если логика слишком сложная
+
+Синтаксис (T-SQL / SQL Server)
+```sql
+CREATE PROCEDURE GetEmployee
+    @id INT
+AS
+BEGIN
+    SELECT * 
+    FROM employees 
+    WHERE id = @id;
+END;
+
+-- Вызов процедуры
+EXEC GetEmployee @id = 1;
+Процедуры с OUTPUT-параметрами
+CREATE PROCEDURE GetEmployeeSalary
+    @id INT,
+    @salary DECIMAL(10,2) OUTPUT
+AS
+BEGIN
+    SELECT @salary = salary
+    FROM employees
+    WHERE id = @id;
+END;
+
+-- Вызов
+DECLARE @emp_salary DECIMAL(10,2);
+EXEC GetEmployeeSalary @id = 1, @salary = @emp_salary OUTPUT;
+PRINT @emp_salary;
+
+-- Процедуры с транзакцией
+CREATE PROCEDURE UpdateSalary
+    @id INT,
+    @increment DECIMAL(10,2)
+AS
+BEGIN
+    BEGIN TRANSACTION;
+    UPDATE employees
+    SET salary = salary + @increment
+    WHERE id = @id;
+
+    IF @@ERROR <> 0
+        ROLLBACK TRANSACTION;
+    ELSE
+        COMMIT TRANSACTION;
+END;
+```
+
+| СУБД       | Язык / примечание                         |
+| ---------- | ----------------------------------------- |
+| Oracle     | PL/SQL: `CREATE OR REPLACE PROCEDURE`     |
+| PostgreSQL | pgSQL: `CREATE FUNCTION ... RETURNS void` |
+| MySQL      | `CREATE PROCEDURE` (CALL для вызова)      |
+
+Когда использовать
++ Много повторяющихся операций
++ Инкапсуляция бизнес-правил
++ Сложные агрегаты или логика с условными операторами
++ Фильтрация и валидация на уровне БД
 ### 20. Что такое view (Представление)?
+`View` — это виртуальная таблица, основанная на результате `SELECT`-запроса.
++ Не хранит данные физически (обычные `view`)
++ Данные вычисляются на лету при обращении
++ Materialized `view` — хранит результат физически, обновляется периодически
+
+Основные характеристики
++ Упрощает сложные запросы (инкапсулирует `JOIN` и агрегаты)
++ Повышает безопасность: пользователи могут видеть только определённые столбцы/строки
++ Можно использовать в `SELECT`, иногда в `INSERT/UPDATE/DELETE` (updatable `view`)
+
+| Тип                    | Особенности                                                  |
+| ---------------------- | ------------------------------------------------------------ |
+| Простое (Simple View)  | На одной таблице, без агрегатов, можно обновлять             |
+| Сложное (Complex View) | `JOIN`, агрегаты, подзапросы; обычно readonly                  |
+| Materialized View      | Хранит данные физически; быстрее для чтения, требует refresh |
+
+Updatable Views
++ Можно выполнять `INSERT`, `UPDATE`, `DELETE` только если `view` простое
++ Ограничения:
+    + Без агрегатов, DISTINCT, GROUP BY
+    + Без подзапросов в SELECT
++ WITH CHECK OPTION — проверяет вставляемые строки на соответствие условию view
+
+Пример:
+```sql
+CREATE VIEW active_employees AS
+SELECT * 
+FROM employees
+WHERE status = 'ACTIVE'
+WITH CHECK OPTION;
+```
+Любая вставка через active_employees должна иметь status = 'ACTIVE'
+
+Пример простого view
+```sql
+CREATE VIEW high_salary_employees AS
+SELECT id, name, salary
+FROM employees
+WHERE salary > 50000;
+```
+Использование:
+```sql
+SELECT * FROM high_salary_employees;
+Materialized view (Oracle / PostgreSQL)
+CREATE MATERIALIZED VIEW mv_high_salary AS
+SELECT id, name, salary
+FROM employees
+WHERE salary > 50000
+WITH DATA;
+
+-- обновление
+REFRESH MATERIALIZED VIEW mv_high_salary;
+```
+
+Быстрое чтение, но нужно управлять актуальностью данных
+
+Важные нюансы
++ Простое view можно использовать в JOIN, WHERE, ORDER BY
++ Complex view часто readonly
++ Materialized view экономит ресурсы на тяжелых запросах (OLAP)
++ Ограничения обновления зависят от СУБД
+
 ### 21. Что такое JDBC?
+
 ### 22. Что нужно для работы с той или иной БД?
+
 ### 23. Как зарегистрировать драйвер?
+
 ### 24. Как получить Connection?
+
 ### 25. Что такое Statement, PreparedStatement? В чем разница между ними?
+
 ### 26. Что такое ResultSet?
+
 ### 27. В чем разница между методами execute, executeUpdate, executeQuery?
+
 ### 28. Можно ли использовать возвращаемое значение execute() для проверки, что что-то обновилось?
+
 ### 29. Как получить при вставке сгенерированные ключи? Как это сделать на чистом sql?
+
 ### 30. Для чего используется конструкция try-with-resources?
 
