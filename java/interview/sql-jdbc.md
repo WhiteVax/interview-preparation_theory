@@ -2487,22 +2487,830 @@ REFRESH MATERIALIZED VIEW mv_high_salary;
 + Ограничения обновления зависят от СУБД
 
 ### 21. Что такое JDBC?
+JDBC (Java Database Connectivity) — стандартный API в Java для взаимодействия с реляционными базами данных.
++ Позволяет выполнять SQL-запросы (SELECT, INSERT, UPDATE, DELETE)
++ Получать и обрабатывать результаты
++ Управлять транзакциями
++ Используется в Java SE и Java EE
 
+| Компонент         | Описание                                           |
+| ----------------- | -------------------------------------------------- |
+| Driver            | Драйвер БД (от вендора), реализует интерфейсы JDBC |
+| Connection        | Соединение с базой данных                          |
+| Statement         | Выполнение SQL-запросов                            |
+| PreparedStatement | Предкомпилированный запрос с параметрами           |
+| CallableStatement | Для вызова хранимых процедур                       |
+| ResultSet         | Результат SELECT-запроса                           |
+
++ PreparedStatement — предотвращает SQL-инъекции
++ Batch updates — для массовых вставок/обновлений
++ Auto-commit — по умолчанию true, для транзакций лучше false
++ Закрывать ресурсы (Connection, Statement, ResultSet) → try-with-resources
++ CallableStatement — вызов хранимых процедур с параметрами IN/OUT
+
+```Java
+import java.sql.*;
+
+public class JdbcExample {
+    public static void main(String[] args) {
+        String url = "jdbc:mysql://localhost:3306/testdb";
+        String user = "root";
+        String pass = "password";
+
+        String query = "SELECT id, name FROM employees WHERE salary > ?";
+
+        try (Connection conn = DriverManager.getConnection(url, user, pass);
+             PreparedStatement ps = conn.prepareStatement(query)) {
+
+            ps.setDouble(1, 50000);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    int id = rs.getInt("id");
+                    String name = rs.getString("name");
+                    System.out.println(id + " - " + name);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+Регистрация драйвера (не всегда нужна в новых JDBC):
+
+	Class.forName("com.mysql.cj.jdbc.Driver");
+
+Transaction management:
+```java
+conn.setAutoCommit(false);
+// execute statements
+conn.commit(); // или conn.rollback();
+```
+PreparedStatement эффективнее, чем Statement, для повторного выполнения запросов
 ### 22. Что нужно для работы с той или иной БД?
+1. JDBC-драйвер
 
++ Это JAR-файл, предоставляемый вендором СУБД.
++ Отвечает за низкоуровневое взаимодействие Java ↔ БД.
+
+Примеры:
++ MySQL: mysql-connector-java-X.X.X.jar
++ PostgreSQL: postgresql-X.X.X.jar
++ Oracle: ojdbc8.jar
+
+2. URL подключения
+
+Формат:
+`jdbc:<vendor>://<host>:<port>/<database>?<опции>`
+
+Примеры:
++ MySQL: jdbc:mysql://localhost:3306/testdb?useSSL=false&serverTimezone=UTC
++ PostgreSQL: jdbc:postgresql://localhost:5432/testdb
++ Oracle: jdbc:oracle:thin:@localhost:1521:orcl
+
+3. Учетные данные
+
++ Username и password для доступа к БД.
++ В production — хранить через конфигурацию, environment variables или secret manager.
+
+4. ClassPath / зависимость
+
+Драйвер нужно добавить в проект:
++ Для Maven: dependency в pom.xml
++ Для Gradle: implementation 'mysql:mysql-connector-java:8.1.0'
++ Либо вручную добавить JAR в ClassPath.
+
+5. Импорты в коде Java
+```java
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+```
+
+6. Регистрация драйвера (опционально в новых версиях JDBC)
+
+   
+    Class.forName("com.mysql.cj.jdbc.Driver");  // для MySQL
+
+В JDBC 4.0+ драйверы автоматически регистрируются через SPI.
+```java
+Пример подключения к MySQL через JDBC
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
+public class DbConnectionExample {
+    public static void main(String[] args) {
+        String url = "jdbc:mysql://localhost:3306/testdb?useSSL=false&serverTimezone=UTC";
+        String user = "root";
+        String password = "password";
+
+        try (Connection conn = DriverManager.getConnection(url, user, password)) {
+            if (conn != null) {
+                System.out.println("Connection successful!");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
+Нюансы:
++ `useSSL=false` отключает SSL (только для тестирования)
++ `serverTimezone=UTC` решает проблему с часовым поясом в MySQL
++ Рекомендуется использовать `try-with-resources`, чтобы закрыть соединение автоматически
+
+Пример подключения к PostgreSQL
+```java
+String url = "jdbc:postgresql://localhost:5432/testdb";
+String user = "postgres";
+String password = "secret";
+
+try (Connection conn = DriverManager.getConnection(url, user, password)) {
+    System.out.println("PostgreSQL connected!");
+} catch (SQLException e) {
+    e.printStackTrace();
+}
+```
+Best practices
++ Использовать `DataSource` / connection pool (HikariCP, Apache DBCP) для production
++ Не хранить пароли в коде — использовать конфигурационные файлы или переменные среды
++ Для Spring Boot: прописывать в `application.properties` или `application.yml`
++ Всегда закрывать соединение (`try-with-resources`)
 ### 23. Как зарегистрировать драйвер?
+Начиная с JDBC 4.0 (Java 6+), драйвер регистрируется автоматически.
 
+Как это работает:
++ Достаточно добавить JDBC-драйвер (JAR) в classpath
++ При запуске DriverManager автоматически находит драйвер через Service Provider (ServiceLoader)
++ Вызов Class.forName() не требуется
+
+Пример:
+```java
+String url = "jdbc:postgresql://localhost:5432/test";
+Connection conn = DriverManager.getConnection(url, "user", "password");
+```
+Если драйвер есть в classpath — всё будет работать.
+
+Старый способ (JDBC < 4.0)
++ Ранее драйвер нужно было загрузить вручную:
+
+  Class.forName("com.mysql.cj.jdbc.Driver");
+
+Это:
++ загружало класс драйвера
++ в статическом блоке драйвер регистрировался в DriverManager
+
+Сейчас этот способ устарел, но иногда используется:
++ в старых проектах
+
+| БД         | Класс драйвера                                 |
+| ---------- | ---------------------------------------------- |
+| MySQL      | `com.mysql.cj.jdbc.Driver`                     |
+| PostgreSQL | `org.postgresql.Driver`                        |
+| Oracle     | `oracle.jdbc.OracleDriver`                     |
+| SQL Server | `com.microsoft.sqlserver.jdbc.SQLServerDriver` |
+
+```Java
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
+public class Main {
+    public static void main(String[] args) {
+        String url = "jdbc:mysql://localhost:3306/test";
+        String user = "root";
+        String password = "1234";
+
+        try (Connection conn = DriverManager.getConnection(url, user, password)) {
+            System.out.println("Connected!");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+1. Если драйвер не найден
+
+
+	java.sql.SQLException: No suitable driver
+
+Причина:
++ драйвер не добавлен в classpath
++ неправильный URL
+
+2. В Maven / Gradle
+
+Maven:
+```xml
+<dependency>
+    <groupId>org.postgresql</groupId>
+    <artifactId>postgresql</artifactId>
+    <version>42.7.0</version>
+</dependency>
+```
+3. В Spring Boot
++ Регистрация полностью автоматическая — нужно только dependency.
 ### 24. Как получить Connection?
+В JDBC соединение с базой данных получают через:
+DriverManager (простой способ)
+DataSource (способ для production)
 
+1. Через DriverManager (базовый способ)
+```java
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
+public class Main {
+    public static void main(String[] args) {
+        String url = "jdbc:mysql://localhost:3306/mydb?useSSL=false&serverTimezone=UTC";
+        String user = "user";
+        String password = "pass";
+
+        try (Connection conn = DriverManager.getConnection(url, user, password)) {
+            System.out.println("Connection established");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
+| БД         | URL                                     |
+| ---------- | --------------------------------------- |
+| MySQL      | `jdbc:mysql://localhost:3306/mydb`      |
+| PostgreSQL | `jdbc:postgresql://localhost:5432/mydb` |
+| Oracle     | `jdbc:oracle:thin:@localhost:1521:xe`   |
+
+2. Пример с HikariCP:
+```java
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+import java.sql.Connection;
+
+HikariConfig config = new HikariConfig();
+config.setJdbcUrl("jdbc:postgresql://localhost:5432/mydb");
+config.setUsername("user");
+config.setPassword("pass");
+
+HikariDataSource ds = new HikariDataSource(config);
+
+try (Connection conn = ds.getConnection()) {
+    System.out.println("Connection from pool");
+}
+```
+
+3. Hibernate
+
+hibernate.cfg.xml
+```xml
+<hibernate-configuration>
+    <session-factory>
+
+        <property name="hibernate.connection.driver_class">
+            org.postgresql.Driver
+        </property>
+
+        <property name="hibernate.connection.url">
+            jdbc:postgresql://localhost:5432/mydb
+        </property>
+
+        <property name="hibernate.connection.username">user</property>
+        <property name="hibernate.connection.password">pass</property>
+
+        <property name="hibernate.dialect">
+            org.hibernate.dialect.PostgreSQLDialect
+        </property>
+
+        <property name="hibernate.hbm2ddl.auto">update</property>
+
+    </session-factory>
+</hibernate-configuration>
+```
+
+```java
+SessionFactory factory =
+        new Configuration().configure().buildSessionFactory();
+
+Session session = factory.openSession();
+
+Transaction tx = session.beginTransaction();
+
+User user = session.get(User.class, 1L);
+
+tx.commit();
+session.close();
+```
+
+```text
+Session
+   ↓
+Hibernate
+   ↓
+DataSource
+   ↓
+Connection Pool
+   ↓
+JDBC Connection
+```
+
+4. Spring Boot
+```yaml
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/mydb
+    username: user
+    password: pass
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+```
++ создаёт DataSource
++ подключает пул HikariCP
++ настраивает Hibernate
++ управляет транзакциями
++ закрывает Connection
+
+Spring создаёт бин: DataSource
+
+```text
+Controller
+   ↓
+Service (@Transactional)
+   ↓
+Hibernate Session
+   ↓
+HikariCP Pool
+   ↓
+JDBC Connection
+   ↓
+Database
+```
 ### 25. Что такое Statement, PreparedStatement? В чем разница между ними?
+Оба интерфейса используются в JDBC для выполнения SQL-запросов, но отличаются по безопасности, производительности и способу работы с параметрами.
 
+Statement
+
+Statement — выполняет статический SQL, который формируется как строка.
+
+Пример
+```java
+Statement stmt = conn.createStatement();
+ResultSet rs = stmt.executeQuery("SELECT * FROM employees WHERE id = 1");
+```
+Минусы
+
++ SQL-инъекции
+
+Если подставлять пользовательские данные:
+```java
+String id = request.getParameter("id");
+Statement stmt = conn.createStatement();
+ResultSet rs = stmt.executeQuery(
+    "SELECT * FROM users WHERE id = " + id
+);
+```
+Пользователь может передать:
+1 OR 1=1
++ → утечка данных.
++ Низкая производительность
++ SQL компилируется БД каждый раз
+
+PreparedStatement
+
+PreparedStatement — предварительно компилируемый SQL с параметрами ?.
+
+Пример
+```java
+PreparedStatement ps =
+        conn.prepareStatement("SELECT * FROM employees WHERE id = ?");
+
+ps.setInt(1, 1);
+ResultSet rs = ps.executeQuery();
+```
+**Преимущества PreparedStatement**
+
+1. Защита от SQL-инъекций
+   Параметры передаются отдельно, БД не воспринимает их как SQL.
+
+2. Производительность
++ SQL компилируется один раз
++ повторные вызовы быстрее
+```java
+PreparedStatement ps =
+    conn.prepareStatement("INSERT INTO users(name) VALUES (?)");
+
+for (String name : names) {
+    ps.setString(1, name);
+    ps.executeUpdate();
+}
+```
+3. Удобная типизация
+
+Методы:
++ setInt()
++ setString()
++ setLong()
++ setDate()
++ setObject()
+
+|                    | Statement          | PreparedStatement     |
+| ------------------ | ------------------ | --------------------- |
+| Параметры          | Конкатенация строк | `?` + setXXX()        |
+| SQL-инъекции       | Уязвим             | Защищён               |
+| Компиляция         | Каждый раз         | Один раз              |
+| Производительность | Ниже               | Выше (при повторении) |
+| Наследование       | Базовый интерфейс  | Расширяет Statement   |
+
+PreparedStatement хорошо подходит для массовых вставок:
+```sql
+PreparedStatement ps =
+    conn.prepareStatement("INSERT INTO users(name) VALUES (?)");
+
+for (String name : names) {
+    ps.setString(1, name);
+    ps.addBatch();
+}
+ps.executeBatch();
+```
+Преимущественно используется PreparedStatement.
 ### 26. Что такое ResultSet?
+ResultSet — это объект JDBC, который содержит результат выполнения SQL-запроса (обычно SELECT) и позволяет построчно читать данные.
+
+Он работает как курсор:
++ указывает на текущую строку
++ перемещается по результату
++ позволяет получать значения столбцов
+
+Базовый пример
+```java
+Statement stmt = conn.createStatement();
+ResultSet rs = stmt.executeQuery("SELECT id, name FROM employees");
+
+while (rs.next()) {
+    int id = rs.getInt("id");
+    String name = rs.getString("name");
+    System.out.println(id + " " + name);
+}
+```
+Как работает `next()`
++ изначально курсор до первой строки
++ `next()` → переходит на следующую строку
++ возвращает false, если строки закончились
+
+Способы получения данных
+
++ По имени столбца:
+  `String name = rs.getString("name");`
+
++ По индексу (начинается с 1):
+  `String name = rs.getString(2);`
+
+| Метод       | Тип    |
+| ----------- | ------ |
+| `getInt()`    | int    |
+| `getLong() `  | long   |
+| `getString()` | String |
+| `getDouble()` | double |
+| `getDate()`   | Date   |
+| `getObject()` | Object |
+
+Проверка `NULL`
+```java
+int salary = rs.getInt("salary");
+if (rs.wasNull()) {
+    System.out.println("Salary is NULL");
+}
+```
+Типы `ResultSet`
+
+При создании:
+```java
+Statement stmt = conn.createStatement(
+        ResultSet.TYPE_SCROLL_INSENSITIVE,
+        ResultSet.CONCUR_READ_ONLY
+);
+```
+| Тип                     | Описание                                    |
+| ----------------------- | ------------------------------------------- |
+| TYPE_FORWARD_ONLY       | только вперёд (по умолчанию)                |
+| TYPE_SCROLL_INSENSITIVE | можно назад/вперёд, изменения в БД не видны |
+| TYPE_SCROLL_SENSITIVE   | изменения в БД могут быть видны             |
+
+Методы навигации:
++ `rs.previous();`
++ `rs.first();`
++ `rs.last();`
++ `rs.absolute(5);`
++ `rs.beforeFirst();`
+
+Обновляемый ResultSet
+
+Если разрешено:
+```java
+Statement stmt = conn.createStatement(
+        ResultSet.TYPE_SCROLL_INSENSITIVE,
+        ResultSet.CONCUR_UPDATABLE
+);
+
+ResultSet rs = stmt.executeQuery("SELECT id, name FROM employees");
+
+rs.next();
+rs.updateString("name", "New Name");
+rs.updateRow();
+```
+Используется редко — обычно обновляют через `UPDATE`.
+
+`ResultSetMetaData`
+
+Позволяет узнать структуру результата:
+```java
+ResultSetMetaData meta = rs.getMetaData();
+
+int columnCount = meta.getColumnCount();
+for (int i = 1; i <= columnCount; i++) {
+    System.out.println(meta.getColumnName(i));
+}
+```
+Полезно для универсальных обработчиков.
+
+Закрытие ресурсов
+
+`ResultSet` связан с `Statement` и `Connection`.
+
+Лучше использовать `try-with-resources`:
+```java
+String sql = "SELECT * FROM employees";
+
+try (Connection conn = DriverManager.getConnection(url, user, pass);
+     PreparedStatement ps = conn.prepareStatement(sql);
+     ResultSet rs = ps.executeQuery()) {
+
+    while (rs.next()) {
+        System.out.println(rs.getString("name"));
+    }
+}
+```
+Закрытие происходит автоматически в порядке:
+`ResultSet → Statement → Connection`
+
+Нюансы
++ Не хранит все данные в памяти — строки могут подгружаться по мере чтения
++ После закрытия Statement → ResultSet становится недействительным
++ Нельзя использовать executeQuery() для INSERT/UPDATE
++ Для больших данных можно настраивать fetch size:
++ ps.setFetchSize(100);
 
 ### 27. В чем разница между методами execute, executeUpdate, executeQuery?
+Эти методы используются для выполнения SQL в JDBC, но предназначены для разных типов запросов.
+
+1. executeQuery()
++ Используется только для SELECT.
++ Возвращает: ResultSet
+```java
+Statement stmt = conn.createStatement();
+ResultSet rs = stmt.executeQuery("SELECT * FROM employees");
+
+while (rs.next()) {
+    System.out.println(rs.getString("name"));
+}
+```
+Если вызвать для INSERT, UPDATE, DELETE → будет SQLException
+
+2. executeUpdate()
+
+Используется для:
++ INSERT
++ UPDATE
++ DELETE
+
++ DDL (CREATE, DROP, ALTER)
+
+Возвращает: int — количество затронутых строк
+```java
+Statement stmt = conn.createStatement();
+
+int rows = stmt.executeUpdate(
+        "UPDATE employees SET name = 'New' WHERE id = 1"
+);
+
+System.out.println("Updated rows: " + rows);
+```
+Нюансы
+
++ Для INSERT/UPDATE/DELETE → число строк
++ Для DDL → обычно 0
+
+3. execute()
+
+Универсальный метод — используется, когда неизвестно, что вернёт запрос.
++ Возвращает: boolean
+    + true → есть ResultSet
+    + false → есть update count
+```java
+Statement stmt = conn.createStatement();
+
+boolean hasResult = stmt.execute("SELECT * FROM employees");
+
+if (hasResult) {
+    ResultSet rs = stmt.getResultSet();
+} else {
+    int count = stmt.getUpdateCount();
+}
+```
+Работа с несколькими результатами
+
+Некоторые запросы (например, хранимые процедуры) могут возвращать:
++ несколько ResultSet
++ несколько update count
+```java
+boolean hasResult = stmt.execute(sql);
+
+while (true) {
+    if (hasResult) {
+        ResultSet rs = stmt.getResultSet();
+        // обработка
+    } else {
+        int count = stmt.getUpdateCount();
+        if (count == -1) break;
+    }
+    hasResult = stmt.getMoreResults();
+}
+```
+| Метод           | Для чего                 | Возвращает                  |
+| --------------- | ------------------------ | --------------------------- |
+| executeQuery()  | SELECT                   | ResultSet                   |
+| executeUpdate() | INSERT/UPDATE/DELETE/DDL | int (кол-во строк)          |
+| execute()       | любой SQL                | boolean (есть ли ResultSet) |
+
+Когда что использовать
++ SELECT → executeQuery()
++ INSERT/UPDATE/DELETE → executeUpdate()
++ Хранимые процедуры / неизвестный результат → execute()
++ В 90% случаев:
+    + SELECT → executeQuery
+    + остальное → executeUpdate
 
 ### 28. Можно ли использовать возвращаемое значение execute() для проверки, что что-то обновилось?
 
+Нет, boolean, который возвращает execute(), не показывает, были ли обновлены строки.
+Он показывает только тип результата.
+
+Что возвращает `execute()`
+
+		boolean result = stmt.execute(sql);
+
+| Значение | Что означает                                                   |
+| -------- | -------------------------------------------------------------- |
+| `true`     | первый результат — `ResultSet` (обычно `SELECT`)                 |
+| `false`    | результат — `update` count или ничего (`INSERT/UPDATE/DELETE`/DDL) |
+
+`false` не означает, что строки были изменены.
+
+```JAVA
+Statement stmt = conn.createStatement();
+
+boolean hasResultSet =
+        stmt.execute("UPDATE employees SET name = 'New' WHERE id = 1");
+
+if (!hasResultSet) {
+    int updatedRows = stmt.getUpdateCount();
+    if (updatedRows > 0) {
+        System.out.println("Rows updated: " + updatedRows);
+    } else {
+        System.out.println("No rows updated");
+    }
+}
+```
+
+1. Возможные значения `getUpdateCount()`
+
+   | Значение | Описание                               |
+   | -------- | -------------------------------------- |
+   | > 0      | строки обновлены                       |
+   | 0        | запрос выполнен, но строки не изменены |
+   | -1       | больше нет результатов                 |
+
+
+2. Для DDL
+
+CREATE TABLE ...
+
+Обычно:
+`getUpdateCount()` → 0
+
+3. Для batch-операций
+
+Если используется batch:
+`int[] counts = stmt.executeBatch();`
+
+Массив содержит количество изменённых строк для каждой операции.
 ### 29. Как получить при вставке сгенерированные ключи? Как это сделать на чистом sql?
+Нужно создать PreparedStatement с флагом:
+
+    Statement.RETURN_GENERATED_KEYS
+
+```java
+String sql = "INSERT INTO employees(name) VALUES (?)";
+
+PreparedStatement ps = conn.prepareStatement(
+        sql,
+        Statement.RETURN_GENERATED_KEYS
+);
+
+ps.setString(1, "John");
+ps.executeUpdate();
+
+ResultSet keys = ps.getGeneratedKeys();
+
+if (keys.next()) {
+    int id = keys.getInt(1);
+    System.out.println("Generated id: " + id);
+}
+```
+
++ БД генерирует ID
++ JDBC запрашивает его после выполнения
++ getGeneratedKeys() возвращает ResultSet
+
+Работает только для авто-генерируемых колонок
++ AUTO_INCREMENT
++ IDENTITY
++ SERIAL
+
+| СУБД       | Способ                    |
+| ---------- | ------------------------- |
+| PostgreSQL | RETURNING                 |
+| MySQL      | LAST_INSERT_ID()          |
+| SQL Server | OUTPUT INSERTED.id        |
+| Oracle     | RETURNING INTO / sequence |
 
 ### 30. Для чего используется конструкция try-with-resources?
+try-with-resources — это синтаксис Java (с версии 7), который позволяет автоматически закрывать ресурсы, реализующие интерфейс AutoCloseable (например, JDBC Connection, Statement, ResultSet).
 
+Таким образом, даже при возникновении исключения ресурсы будут закрыты — утечки соединений или файлов исключены.
+```java
+Синтаксис
+try (ResourceType r = new ResourceType()) {
+    // Работа с ресурсом
+} catch (ExceptionType e) {
+    // Обработка ошибок
+}
+```
+JDBC-пример
+
+```java
+String sql = "SELECT * FROM employees";
+
+try (Connection conn = DriverManager.getConnection(url, user, pass);
+     PreparedStatement ps = conn.prepareStatement(sql);
+     ResultSet rs = ps.executeQuery()) {
+
+    while (rs.next()) {
+        System.out.println(rs.getString("name"));
+    }
+
+} catch (SQLException e) {
+    e.printStackTrace();
+}
+// conn, ps, rs закрыты автоматически
+```
+Нюансы
++ Несколько ресурсов
+```java
+try (Connection conn = ...;
+     Statement stmt = ...;
+     ResultSet rs = ...) {
+    ...
+}
+```
++ Все ресурсы будут закрыты в обратном порядке их объявления.
+
+*Suppressing exceptions*
+
+Если внутри блока try возникает исключение, а при закрытии ресурсов — другое, второе подавляется, чтобы основное исключение не потерялось.
+
+Преимущество перед `finally`
++ Раньше приходилось писать:
+```java
+Connection conn = null;
+try {
+    conn = DriverManager.getConnection(url, user, pass);
+    // Работа
+} finally {
+    if (conn != null) conn.close();
+}
+```
+`try-with-resources` кратче и безопаснее
+
+Почему важно в JDBC
++ Connection, Statement и ResultSet — ресурсоёмкие
++ Если не закрыть → утечка соединений, зависание пула, ошибки
++ try-with-resources гарантирует корректное закрытие даже при SQLException
