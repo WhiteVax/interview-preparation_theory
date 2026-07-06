@@ -8,12 +8,14 @@
 - [**Collection lite**](java/interview/collection_lite.md)
 - [**Stream**](java/interview/stream.md)
 
+
 - [**Структуры данных и алгоритмы**](java/interview/collection_pro.md)
 - [**IO**](java/interview/io.md)
 - [**SQL, JDBC**](java/interview/io.md)
 - [**Garbage Collection**](java/interview/garbage-collection.md)
 - [**OOD**](java/interview/clean-arch.md)
-- [**Алгоритмы на собеседовании**]()
+- [**Алгоритмы на собеседовании**](java/interview/algo.md)
+
 
 - [**Git**](java/interview/git.md)
 - [**Thread**](java/interview/thread.md)
