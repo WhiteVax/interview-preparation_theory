@@ -10,6 +10,47 @@ java core:
   + [Создаём простой копирующий сборщик мусора](https://habr.com/ru/companies/ruvds/articles/861776/)
   + [Soft-, Weak-, Final- и PhantomReference в Java](https://habr.com/ru/articles/987362/)
   + [Сборка мусора в Java. Часть №1. Обзор сборщиков мусора и их различий](https://habr.com/ru/companies/spring_aio/articles/856468/)
+```text
+Java Source Code
+      │
+      ▼
+javac
+      │
+      ▼
+Lexical Analysis
+      │
+Syntax Analysis
+      │
+Semantic Analysis
+      │
+Annotation Processing
+      │
+Desugaring
+      │
+Bytecode Generation
+      │
+      ▼
+.class file
+      │
+      ▼
+ClassLoader
+      │
+      ▼
+Loading
+      │
+      ▼
+Linking
+   │
+   ├─ Verification
+   ├─ Preparation
+   └─ Resolution
+      │
+      ▼
+Initialization
+      │
+      ▼
+Class Ready
+```
 
 Задачники:
 
