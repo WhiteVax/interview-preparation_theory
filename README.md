@@ -11,7 +11,7 @@
 
 - [**Структуры данных и алгоритмы**](java/interview/collection_pro.md)
 - [**IO**](java/interview/io.md)
-- [**SQL, JDBC**](java/interview/io.md)
+- [**SQL, JDBC**](java/interview/sql-jdbc.md)
 - [**Garbage Collection**](java/interview/garbage-collection.md)
 - [**OOD**](java/interview/clean-arch.md)
 - [**Алгоритмы на собеседовании**](java/interview/algo.md)
